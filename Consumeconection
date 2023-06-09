@@ -1,0 +1,68 @@
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Tp.Data.ConstantsData;
+using Tp.Usual.Entity;
+
+namespace Tp.Data
+{
+    public class ClientesToolsDB
+    {
+        public ConsultaClienteActivo ConsultaClienteActivo(string rfcEmisor)
+        {
+            ConsultaClienteActivo consulta = new ConsultaClienteActivo();
+            StoreProcedureClientes procedure = new StoreProcedureClientes(ConstantClientes.GetClientebyRFC);
+            procedure.AddInParameter("@RfcEmisor", System.Data.DbType.String, rfcEmisor);
+            IDataReader drt = null;
+
+            drt = procedure.ExcecureReader();
+
+            using (drt)
+            {
+                while(drt.Read())
+                {
+                    if (!string.IsNullOrEmpty(drt["IdEmail"].ToString()))
+                    {
+                        consulta.IdEmail = Convert.ToInt32(drt["IdEmail"].ToString());
+                    }
+                    else
+                    {
+                        consulta.IdEmail = 0;
+                    }
+                    if (!string.IsNullOrEmpty(drt["IdEmisor"].ToString()))
+                    {
+                        consulta.IdEmisor = Convert.ToInt32(drt["IdEmisor"].ToString());
+                    }
+                    else
+                    {
+                        consulta.IdEmisor = 0;
+                    }
+                    if (!string.IsNullOrEmpty(drt["EmailEmisor"].ToString()))
+                    {
+                        consulta.EmailEmisor = drt["EmailEmisor"].ToString();
+                    }
+                    if (!string.IsNullOrEmpty(drt["Activo"].ToString()))
+                    {
+                        consulta.Activo = Convert.ToBoolean(drt["Activo"].ToString());
+                    }
+                    if (!string.IsNullOrEmpty(drt["IdClientes"].ToString()))
+                    {
+                        consulta.IdCliente = Convert.ToInt32(drt["IdClientes"].ToString());
+                    }
+                    else
+                    {
+                        consulta.IdCliente = 0;
+                    }
+
+                }
+            }
+            drt.Close();
+            procedure.Close();
+            procedure.Dispose();
+            return consulta;
+        }
+    }
+}
