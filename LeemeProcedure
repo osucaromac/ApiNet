@@ -1,0 +1,180 @@
+using System;
+using System.Data;
+using System.Data.SqlClient;
+using System.Collections.Generic;
+using System.Configuration;
+
+namespace Tp.Data
+{
+    /// <summary>
+    /// Clsae Helper al motor de sql server
+    /// </summary>
+    public sealed class StoreProcedure
+    {
+
+        private SqlCommand cmd;
+        private SqlConnection con;
+
+        /// <summary>
+        /// Parametros a pasar, para executar stored procedures
+        /// </summary>
+        /// <param name="param"></param>
+        public void Parameters(SqlParameter[] param)
+        {
+            cmd.Parameters.AddRange(param);
+        }
+
+        /// <summary>
+        /// Para ejecutar strored procedures
+        /// </summary>
+        /// <param name="name"></param>
+        public StoreProcedure(string name)
+        {
+            con = new SqlConnection(ConfigurationManager.ConnectionStrings["DBTimbrador"].ConnectionString);
+            con.Open();
+            cmd = con.CreateCommand();
+            cmd.CommandText = name;
+            cmd.Connection = con;
+            cmd.CommandType = CommandType.StoredProcedure;
+            cmd.CommandTimeout = 300;
+        }
+        public StoreProcedure(string name, bool Stored)
+        {
+            con = new SqlConnection(ConfigurationManager.ConnectionStrings["DBTimbrador"].ConnectionString);
+            con.Open();
+            cmd = con.CreateCommand();
+            cmd.CommandText = name;
+            cmd.Connection = con;
+            if (Stored)
+                cmd.CommandType = CommandType.StoredProcedure;
+            cmd.CommandTimeout = 300;
+        }
+        public StoreProcedure(string name, string path)
+        {
+            switch (path)
+            {
+                case "Alfa":
+                    con = new SqlConnection(ConfigurationManager.ConnectionStrings["DBTimbrador"].ConnectionString);
+                    break;
+                case "Beta":
+                    con = new SqlConnection(ConfigurationManager.ConnectionStrings["DBCliente"].ConnectionString);
+                    break;
+                case "Gamma":
+                    con = new SqlConnection(ConfigurationManager.ConnectionStrings["TPBatchChannel"].ConnectionString);
+                    break;
+                case "Delta":
+                    con = new SqlConnection(ConfigurationManager.ConnectionStrings["CatalogosSAT"].ConnectionString);
+                    break;
+                case "Sigma":
+                    con = new SqlConnection(ConfigurationManager.ConnectionStrings["master"].ConnectionString);
+                    break;
+                default:
+                    break;
+            }
+
+            con.Open();
+            cmd = con.CreateCommand();
+            cmd.CommandText = name;
+            cmd.Connection = con;
+            cmd.CommandType = CommandType.StoredProcedure;
+            cmd.CommandTimeout = 300;
+        }
+
+        /// <summary>
+        /// Executta la sentencia sql regresando solo el escalar 
+        /// </summary>
+        /// <returns></returns>
+        public object ExecuteScalar()
+        {
+            int a = 0;
+
+            if ((cmd.CommandText == string.Empty) || (cmd.CommandText == ""))
+            {
+                return a;
+            }
+            else
+            {
+                return ExecuteScalar();
+            }
+        }
+        /// <summary>
+        /// Ejecuta la sentrencia sin regresar listas o escalar
+        /// </summary>
+        /// <returns></returns>
+        public int Execute()
+        {
+            int a = 0;
+            if ((cmd.CommandText == string.Empty) || (cmd.CommandText == ""))
+            {
+                return a;
+            }
+            else
+            {
+                var dr = cmd.ExecuteNonQuery();
+                return dr;
+            }
+        }
+        /// <summary>
+        /// Data reader para obtener los datos de la ejecución sql
+        /// </summary>
+        /// <returns></returns>
+        public IDataReader ExcecureReader()
+        {
+            IDataReader dr = null;
+            if ((cmd.CommandText == string.Empty) || (cmd.CommandText == ""))
+            {
+                return dr;
+            }
+            else
+            {
+                dr = cmd.ExecuteReader();
+                return dr;
+            }
+        }
+        public System.Xml.XmlReader ExecuteXMLReader()
+        {
+            System.Xml.XmlReader dr = null;
+            if ((cmd.CommandText == string.Empty) || (cmd.CommandText == ""))
+            {
+                return dr;
+            }
+            else
+            {
+                dr = cmd.ExecuteXmlReader();
+                return dr;
+            }
+        }
+        /// <summary>
+        /// Agrega un parametro con objeto
+        /// </summary>
+        /// <param name="param"></param>
+        /// <param name="Tipo"></param>
+        /// <param name="value"></param>
+        public void AddInParameter(string param, DbType Tipo, object value)
+        {
+            cmd.Parameters.AddWithValue(param, Tipo).Value = value;
+            //cmd.Parameters.Add(param, Tipo).Value = value;
+        }
+        /// <summary>
+        /// Agrega un parametro con tipo de dato
+        /// </summary>
+        /// <param name="param"></param>
+        /// <param name="Tipo"></param>
+        public void AddInParameter(string param, DbType Tipo)
+        {
+            cmd.Parameters.AddWithValue(param, Tipo).Value = null;
+        }
+        /// <summary>
+        /// Cierra las conexiones a la BD.
+        /// </summary>
+        public void Close()
+        {
+            con.Close();
+        }
+        public void Dispose()
+        {
+            con.Dispose();
+        }
+    }
+
+}
